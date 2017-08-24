@@ -173,7 +173,9 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback {
 
         //request to server base end point
         var call = api.request_route(tvFrom.text.toString(),
-                tvDestination.text.toString())
+                tvDestination.text.toString(),"walking")
+
+        //walking,transit,driving,bycicyle
 
         //get response
         call.enqueue(object : Callback<ResponseJSON> {

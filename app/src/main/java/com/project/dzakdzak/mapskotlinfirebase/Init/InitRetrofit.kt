@@ -27,6 +27,7 @@ interface ApiService {
     @GET("json")
     fun request_route(
             @Query("origin") awal: String,
-            @Query("destination") tujuan: String
+            @Query("destination") tujuan: String,
+            @Query("mode") mode: String
     ): Call<ResponseJSON>
 }
