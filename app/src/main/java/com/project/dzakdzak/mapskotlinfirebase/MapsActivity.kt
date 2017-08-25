@@ -1,7 +1,9 @@
 package com.project.dzakdzak.mapskotlinfirebase
 
 import android.content.Intent
+import android.location.Geocoder
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
 import android.support.v4.app.FragmentActivity
 import android.util.Log
 import android.widget.Toast
@@ -15,12 +17,16 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.database.FirebaseDatabase
 import com.project.dzakdzak.mapskotlinfirebase.Init.InitRetrofit
 import com.project.dzakdzak.mapskotlinfirebase.Init.ResponseJSON
 import kotlinx.android.synthetic.main.activity_maps.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.util.*
+
+
 
 class MapsActivity : FragmentActivity(), OnMapReadyCallback {
 
@@ -29,15 +35,69 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback {
     var awal: LatLng? = null
     var akhir: LatLng? = null
 
+    var gps : GPSTracker? = null
+
+    var lat : Double? = null
+    var long : Double? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        var permission = (android.Manifest.permission.ACCESS_COARSE_LOCATION)
+        ActivityCompat.requestPermissions(this@MapsActivity, arrayOf(permission), 2)
+
+        gps = GPSTracker(this@MapsActivity)
+
+        //check gps device
+        if(gps!!.canGetLocation){
+            //get coordinat
+             lat = gps!!.getLatitude()
+             long = gps!!.getLongitude()
+
+            Log.d("coordinat ",lat.toString()+","+long.toString())
+
+            //get name location based coordinat
+//            var name = convertCoordinateToName(lat,long)
+//            tvFrom.setText(name)
+
+        } else {
+            gps!!.showSettingGps()
+        }
+
+        // Write a message to the database
+        val database = FirebaseDatabase.getInstance().getReference("lokasi")
+
+        btnCheckIn.setOnClickListener {
+                var lokasi = Lokasi(tvFrom.text.toString(),tvDestination.text.toString(),tvJarak.text.toString(),
+                        tvHarga.text.toString(),tvWaktu.text.toString(),
+                        lat.toString(),long.toString())
+
+                var key = database.push().key
+
+            database.child(key).setValue(lokasi)
+        }
+    }
+
+    private fun convertCoordinateToName(lat: Double, long: Double) : String{
 
 
+        var nameLocation : String? = null
+        //deklarasi geocoder
+        var geoCoder = Geocoder(this@MapsActivity, Locale.getDefault())
+        var insertCoor = geoCoder.getFromLocation(lat,long,1)
+
+        if(insertCoor.size > 0){
+            nameLocation = insertCoor.get(0).getAddressLine(0)
+
+        }
+
+        return nameLocation!!
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 
@@ -73,8 +133,9 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback {
         mMap!!.uiSettings.isZoomControlsEnabled = true
         mMap!!.uiSettings.isCompassEnabled = true
         mMap!!.uiSettings.setAllGesturesEnabled(true)
-        mMap!!.uiSettings.isMyLocationButtonEnabled = true
+       // mMap!!.uiSettings.isMyLocationButtonEnabled = true
         mMap!!.isBuildingsEnabled = true
+        mMap!!.isMyLocationEnabled = true
 
 
     }
@@ -173,7 +234,7 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback {
 
         //request to server base end point
         var call = api.request_route(tvFrom.text.toString(),
-                tvDestination.text.toString(),"walking")
+                tvDestination.text.toString(),"driving")
 
         //walking,transit,driving,bycicyle
 
