@@ -39,7 +39,7 @@ class DirectionMapsV2(private val context: Context) {
             val line = map.addPolyline(PolylineOptions()
                     .add(LatLng(src.latitude, src.longitude),
                             LatLng(dest.latitude, dest.longitude)).width(5f)
-                    .color(Color.BLUE).geodesic(true))
+                    .color(Color.CYAN).geodesic(true))
 
         }
     }
