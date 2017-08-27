@@ -136,6 +136,7 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback {
        // mMap!!.uiSettings.isMyLocationButtonEnabled = true
         mMap!!.isBuildingsEnabled = true
         mMap!!.isMyLocationEnabled = true
+        mMap!!.isTrafficEnabled = true
 
 
     }
